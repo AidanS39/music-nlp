@@ -38,12 +38,10 @@ def song_lyrics_dataset():
                 print("Error: Lyric column not found.")
                 return -1
 
-            print(cur_songs[1].split(',')[artist_index])
-            
             # add artist and lyrics to list of songs
             for song in cur_songs[1:]:
                 song = song.split(',')
-                songs.append([song[artist_index], song[lyric_index].rstrip()])
+                songs.append((song[artist_index], song[lyric_index].rstrip()))
     return songs
 
 # TODO
