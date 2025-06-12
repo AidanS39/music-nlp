@@ -137,9 +137,9 @@ def top_k_evaluation(naive_model: tuple(), test_set: list(), k: int):
 
 songs = preprocessing.song_lyrics_dataset()
 
-train, test = train_test_split(songs, 0.8)
+train, test = train_test_split(songs, 0.9)
 
 model = train_naive_bayes(train)
 
 print_test_naive_bayes(model, test[300])
-top_k_evaluation(model, test, 5)
+top_k_evaluation(model, test, 10)
