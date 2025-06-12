@@ -27,6 +27,9 @@ def get_naive_elements(documents: list()):
 
     # dictionary of bag of words for each classifier
     bows = dict()
+
+    # set of all words in data
+    vocab = set()
     
     # iterate through every document
     for doc in documents:
@@ -43,16 +46,17 @@ def get_naive_elements(documents: list()):
         # iterate through every word in current document
         for word in content.split():
             num_words[classifier] += 1
+            vocab.add(word)
             if word not in bows[classifier].keys():
                 bows[classifier][word] = 1
             else:
                 bows[classifier][word] += 1
+    
+    return classifiers, num_docs, num_words, bows, vocab
 
-    return classifiers, num_docs, num_words, bows
-
-# returns a naive model (classifiers, log prior, log likelihood) for each classifier
+# returns a naive model (classifiers, log prior, log likelihood, vocab) for each classifier
 def train_naive_bayes(documents: list()):
-    classifiers, num_docs, num_words, bows = get_naive_elements(documents)
+    classifiers, num_docs, num_words, bows, vocab = get_naive_elements(documents)
     
     log_priors = dict()
     log_likelihoods = dict()
@@ -65,24 +69,40 @@ def train_naive_bayes(documents: list()):
         log_likelihoods[classifier] = dict()
         
         # iterate through all words in classifier's bag of words
-        for word in bows[classifier]:
-            log_likelihoods[classifier][word] = math.log2(bows[classifier][word] / num_words[classifier])
+        for word in vocab:
+            if word in bows[classifier].keys():
+                log_likelihoods[classifier][word] = math.log2((bows[classifier][word] + 1) / (num_words[classifier] + len(vocab)))
+            else:
+                log_likelihoods[classifier][word] = math.log2((1) / (num_words[classifier] + len(vocab)))
     
-    return (classifiers, log_priors, log_likelihoods)
+    return (classifiers, log_priors, log_likelihoods, vocab)
 
 # returns a sorted dictionary of classes and their relative likeliness given the document
 def test_naive_bayes(naive_model: tuple(), document: list()):
     classifiers = naive_model[0]
     log_priors = naive_model[1]
     log_likelihoods = naive_model[2]
+    vocab = naive_model[3]
     
     probabilities = list()
-
-    probabilities.append((classifiers[0], log_priors[classifiers[0]] + sum([log_likelihoods[classifiers[0]][word] for word in document if word in log_likelihoods[classifiers[0]]])))
+    
+    # calculate first classifier's probability add as a baseline to probabilities for sorting
+    probability = log_priors[classifiers[0]]
+    
+    for word in document:
+        if word in vocab:
+            probability += log_likelihoods[classifiers[0]][word]
+    
+    probabilities.append((classifiers[0], probability))
 
     # iterate through all classifiers, calculate each probability given document
     for classifier in classifiers[1:]:
-        probability = log_priors[classifier] + sum([log_likelihoods[classifier][word] for word in document if word in log_likelihoods[classifier]])
+        probability = log_priors[classifier]
+        for word in document:
+            if word in vocab:
+                probability += log_likelihoods[classifier][word]
+        
+        # find ordered index and insert current probability to probabilities
         i = 0
         for prob in probabilities:
             if probability > prob[1]:
@@ -101,9 +121,9 @@ def print_test_naive_bayes(naive_model: tuple(), document: list()):
     print("----------------------")
     print("Actual Artist: " + document[0])
     print("----------------------")
-    print("Rankings\tArtist\t\tLog Probability")
+    print(f"{'Rankings':<10}{'Artist':<20}{'Log Probability':<20}")
     for i, prob in enumerate(probs):
-       print(str(i + 1) + "\t\t" + prob[0] + "\t\t\t" + str(prob[1])) 
+       print(f"{str(i + 1):<10}{prob[0]:<20}{prob[1]:<20}") 
 
 def top_k_evaluation(naive_model: tuple(), test_set: list(), k: int):
     total_documents = len(test_set)
@@ -121,5 +141,5 @@ train, test = train_test_split(songs, 0.8)
 
 model = train_naive_bayes(train)
 
-print_test_naive_bayes(model, test[200])
-top_k_evaluation(model, test, 10)
+print_test_naive_bayes(model, test[300])
+top_k_evaluation(model, test, 5)
