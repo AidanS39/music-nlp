@@ -18,6 +18,6 @@ Follow these steps to execute the project:
 
 If you directly downloaded the zip file from the website, you will have to create the correct path to the target data. First create a directory called **data** from the root directory of this project. Then, create another directory inside the **data** folder, which will be named **song-lyrics-dataset**. Then, extract the contents of the zip file into the **song-lyrics-dataset** folder. You should now have the correct path to the target data, which from the root directory should be **data/song-lyrics-dataset/csv**
 
-2. Run `python3 music.py`. This should start the main program which will give you a menu to choose from after a few seconds.
+2. From within the **src** directory, run `python3 music.py`. This should start the main program which will give you a menu to choose from after a few seconds.
 
 3. Choose an option listed in the menu by typing the option's number + **ENTER**, or just press **ENTER** to exit the program.
