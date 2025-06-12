@@ -1,0 +1,2 @@
+https://www.kaggle.com/datasets/carlosgdcj/genius-song-lyrics-with-language-information/data
+https://www.kaggle.com/datasets/deepshah16/song-lyrics-dataset
