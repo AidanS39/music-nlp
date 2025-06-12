@@ -1,5 +1,17 @@
 import preprocessing
 import math
+import random
+
+def train_test_split(data: list(), train_split: float):
+    # generate the random train test indices over the data set
+    train_indices = random.sample(range(len(data)), (int)(len(data) * train_split))
+    test_indices = [i for i in range(len(data)) if i not in train_indices]
+    
+    # generate the train and test sets
+    train = [data[i] for i in train_indices]
+    test = [data[i] for i in test_indices]
+
+    return train, test
 
 # NOTE: documents should be a list of 2-tuples (classifier, content)
 def get_naive_elements(documents: list()):
@@ -58,30 +70,56 @@ def train_naive_bayes(documents: list()):
     
     return (classifiers, log_priors, log_likelihoods)
 
-# returns the most likely class given the document
+# returns a sorted dictionary of classes and their relative likeliness given the document
 def test_naive_bayes(naive_model: tuple(), document: list()):
     classifiers = naive_model[0]
     log_priors = naive_model[1]
     log_likelihoods = naive_model[2]
     
-    # initialize first classifier as the maximum a posterior 
-    c_map = classifiers[0]
-    maximum = log_priors[classifiers[0]] + sum([log_likelihoods[classifiers[0]][word] for word in document if word in log_likelihoods[classifiers[0]]])
-    
-    # iterate through all classifiers, find the maximum probability given document
-    for classifier in classifiers:
+    probabilities = list()
+
+    probabilities.append((classifiers[0], log_priors[classifiers[0]] + sum([log_likelihoods[classifiers[0]][word] for word in document if word in log_likelihoods[classifiers[0]]])))
+
+    # iterate through all classifiers, calculate each probability given document
+    for classifier in classifiers[1:]:
         probability = log_priors[classifier] + sum([log_likelihoods[classifier][word] for word in document if word in log_likelihoods[classifier]])
-        if probability > maximum:
-            maximum = probability
-            c_map = classifier
+        i = 0
+        for prob in probabilities:
+            if probability > prob[1]:
+                probabilities.insert(i, (classifier, probability))
+                break
+            else:
+                i += 1
+        if i >= len(probabilities):
+            probabilities.append((classifier, probability))
+ 
+    return probabilities
 
-    return c_map
+def print_test_naive_bayes(naive_model: tuple(), document: list()):
+    probs = test_naive_bayes(naive_model, document[1].split())
+    print("Naive Bayes Evaluation")
+    print("----------------------")
+    print("Actual Artist: " + document[0])
+    print("----------------------")
+    print("Rankings\tArtist\t\tLog Probability")
+    for i, prob in enumerate(probs):
+       print(str(i + 1) + "\t\t" + prob[0] + "\t\t\t" + str(prob[1])) 
 
+def top_k_evaluation(naive_model: tuple(), test_set: list(), k: int):
+    total_documents = len(test_set)
+    correct_documents = 0
+    for document in test_set:
+        ranked_classifiers = [classifier[0] for i, classifier in enumerate(test_naive_bayes(naive_model, document[1].split()), 1) if i <= k]
+        if document[0] in ranked_classifiers:
+            correct_documents += 1
+    print(str(correct_documents) + "/" + str(total_documents) + " in top " + str(k))
+        
 
 songs = preprocessing.song_lyrics_dataset()
 
-model = train_naive_bayes(songs)
+train, test = train_test_split(songs, 0.8)
 
+model = train_naive_bayes(train)
 
-print(test_naive_bayes(model, ["come", "up", "to", "meet", "you", "tell", "you", "sorry"]))
-
+print_test_naive_bayes(model, test[200])
+top_k_evaluation(model, test, 10)
