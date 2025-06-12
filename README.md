@@ -1,4 +1,4 @@
-# Applied to Natural Language Processing applied to Music
+# Natural Language Processing applied to Music
 
 Using Natural Language Processing concepts with Python to analyze music lyrics.
 
