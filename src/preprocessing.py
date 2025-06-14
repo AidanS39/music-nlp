@@ -16,6 +16,7 @@ def song_lyrics_dataset():
             # analyze table header, find index of artist and lyrics
             header = cur_songs[0].rstrip()
             artist_index = -1
+            title_index = -1
             lyric_index = -1
             for i, title_col in enumerate(header.split(',')):
                 if title_col == "Artist":
@@ -23,6 +24,12 @@ def song_lyrics_dataset():
                         artist_index = i
                     else:
                         print("Error: multiple Artist columns in file.")
+                        return -1
+                elif title_col == "Title":
+                    if title_index == -1:
+                        title_index = i
+                    else:
+                        print("Error: multiple Title columns in file.")
                         return -1
                 elif title_col == "Lyric":
                     if lyric_index == -1:
@@ -37,11 +44,15 @@ def song_lyrics_dataset():
             if lyric_index == -1:
                 print("Error: Lyric column not found.")
                 return -1
+            if title_index == -1:
+                print("Error: Title column not found.")
+                return -1
+
 
             # add artist and lyrics to list of songs
             for song in cur_songs[1:]:
                 song = song.split(',')
-                songs.append((song[artist_index], song[lyric_index].rstrip()))
+                songs.append((song[artist_index], song[lyric_index].rstrip(), song[title_index]))
     return songs
 
 # TODO

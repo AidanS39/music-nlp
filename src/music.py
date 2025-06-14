@@ -117,9 +117,14 @@ def test_naive_bayes(naive_model: tuple(), document: list()):
 
 def print_test_naive_bayes(naive_model: tuple(), document: list()):
     probs = test_naive_bayes(naive_model, document[1].split())
-    print("Naive Bayes Evaluation")
+    
+    print("Song Lyrics: ")
+    print(document[1])
+
+    print("Most likely artist")
     print("----------------------")
     print("Actual Artist: " + document[0])
+    print("Song Title: " + document[2])
     print("----------------------")
     print(f"{'Rankings':<10}{'Artist':<20}{'Log Probability':<20}")
     for i, prob in enumerate(probs):
@@ -133,13 +138,49 @@ def top_k_evaluation(naive_model: tuple(), test_set: list(), k: int):
         if document[0] in ranked_classifiers:
             correct_documents += 1
     print(str(correct_documents) + "/" + str(total_documents) + " in top " + str(k))
+
+def main():
+    print("Preprocessing song data...")
+    songs = preprocessing.song_lyrics_dataset()
+
+    print("Splitting data into training and test sets...")
+    train, test = train_test_split(songs, 0.9)
+
+    print("Training model...")
+    model = train_naive_bayes(train)
+    
+    print("Welcome to the Naive Bayes Music Program")
+
+    while True:
+        print("----------------------")
+        print("Options:")        
+        print("(1)        Most likely artist for specified song")        
+        print("(2)        Top k Evaluation")
+        print("([ENTER])  Exit")
+        print("----------------------")
         
+        option = input("Please select an option: ")
+        if option == "1":
+            try:
+                song_index = int(input(f"Please select a song index from 1 to {len(test)}: "))
+            except ValueError:
+                print("Invalid song index.")
+            if song_index > 0 and song_index <= len(test):
+                print_test_naive_bayes(model, test[song_index - 1])
+            else:
+                print("Invalid song index. Song index must be a number from 1 to {len(test)}: ")
+        elif option == "2": 
+            try:
+                k = int(input(f"Please select a k from 1 to {len(model[0])}: "))
+            except ValueError:
+                print("Invalid k.")
+            if k > 0 and k <= len(model[0]):
+                top_k_evaluation(model, test, k)
+            else:
+                print("Invalid k. k must be a number from 1 to {len(model[0])}")
+        elif option == "":
+            return 0
+        else:
+            print("Not a valid option.")
 
-songs = preprocessing.song_lyrics_dataset()
-
-train, test = train_test_split(songs, 0.9)
-
-model = train_naive_bayes(train)
-
-print_test_naive_bayes(model, test[300])
-top_k_evaluation(model, test, 10)
+main()
