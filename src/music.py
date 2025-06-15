@@ -13,7 +13,6 @@ def train_test_split(data: list(), train_split: float):
 
     return train, test
 
-# NOTE: documents should be a list of 2-tuples (classifier, content)
 def get_naive_elements(documents: list()):
     
     # list of classifiers
@@ -86,17 +85,8 @@ def test_naive_bayes(naive_model: tuple(), document: list()):
     
     probabilities = list()
     
-    # calculate first classifier's probability add as a baseline to probabilities for sorting
-    probability = log_priors[classifiers[0]]
-    
-    for word in document:
-        if word in vocab:
-            probability += log_likelihoods[classifiers[0]][word]
-    
-    probabilities.append((classifiers[0], probability))
-
     # iterate through all classifiers, calculate each probability given document
-    for classifier in classifiers[1:]:
+    for classifier in classifiers:
         probability = log_priors[classifier]
         for word in document:
             if word in vocab:
@@ -130,14 +120,70 @@ def print_test_naive_bayes(naive_model: tuple(), document: list()):
     for i, prob in enumerate(probs):
        print(f"{str(i + 1):<10}{prob[0]:<20}{prob[1]:<20}") 
 
-def top_k_evaluation(naive_model: tuple(), test_set: list(), k: int):
+def top_k_evaluation(model: tuple(), test_set: list(), k: int):
     total_documents = len(test_set)
     correct_documents = 0
     for document in test_set:
-        ranked_classifiers = [classifier[0] for i, classifier in enumerate(test_naive_bayes(naive_model, document[1].split()), 1) if i <= k]
+        ranked_classifiers = [classifier[0] for i, classifier in enumerate(test_naive_bayes(model, document[1].split()), 1) if i <= k]
         if document[0] in ranked_classifiers:
             correct_documents += 1
     print(str(correct_documents) + "/" + str(total_documents) + " in top " + str(k))
+
+def top_k_classifier_evaluation(model: tuple(), test_set: list(), k: int, classifier: str):
+    classifier_set = [document for document in test_set if document[0] == classifier]
+    total_documents = len(classifier_set)
+    correct_documents = 0
+    for document in classifier_set:
+        ranked_classifiers = [classifier[0] for i, classifier in enumerate(test_naive_bayes(model, document[1].split()), 1) if i <= k]
+        if document[0] in ranked_classifiers:
+            correct_documents += 1
+    print("For " + classifier + ":")
+    print(str(correct_documents) + "/" + str(total_documents) + " in top " + str(k))
+
+def user_input_artist(artists: list()):
+    print("Artists: ") 
+    for i, artist in enumerate(artists):
+        print(f"({i + 1})\t{artist}")
+    try:
+        artist_index = int(input("\nPlease choose an artist by their index: "))
+    except ValueError:
+        print("Invalid artist index.")
+        return -1 
+    if artist_index < 1 or artist_index > len(artists):
+        print("Invalid artist index.")
+        return -1 
+    else:
+        return artists[artist_index - 1]
+
+def user_input_song_by_artist(artist: str, songs: list()):
+    artist_song_list = [(song[2], songs_index) for songs_index, song in enumerate(songs) if song[0] == artist]
+    
+    print(f"Songs by {artist}:")
+    for i, song in enumerate(artist_song_list):
+        print(f"{i + 1}\t\t{song[0]}") 
+    
+    try:
+        song_index = int(input(f"Please select a song by its index: "))
+    except ValueError:
+        print("Invalid song index.")
+        return -1
+    if song_index < 0 and song_index > len(artist_song_list):
+        print("Invalid song index. Song index must be a number from 1 to {len(artist_song_list)}: ")
+        return -1
+    else:
+        return songs[artist_song_list[song_index - 1][1]]
+
+def user_input_k(max_k: int):
+    try:
+        k = int(input(f"Please select a k from 1 to {max_k}: "))
+    except ValueError:
+        print("Invalid k.")
+        return -1
+    if k > 0 and k <= max_k:
+        return k
+    else:
+        print(f"Invalid k. k must be a number from 1 to {max_k}")
+        return -1
 
 def main():
     print("Preprocessing song data...")
@@ -147,40 +193,46 @@ def main():
     train, test = train_test_split(songs, 0.9)
 
     print("Training model...")
-    model = train_naive_bayes(train)
-    
-    print("Welcome to the Naive Bayes Music Program")
+    model = train_naive_bayes(train) 
+    artists = model[0]
+
+    print("\nWelcome to the Naive Bayes Music Program")
 
     while True:
         print("----------------------")
         print("Options:")        
         print("(1)        Most likely artist for specified song")        
         print("(2)        Top k Evaluation")
+        print("(3)        Top k Artist Evaluation")
         print("([ENTER])  Exit")
         print("----------------------")
         
         option = input("Please select an option: ")
         if option == "1":
-            try:
-                song_index = int(input(f"Please select a song index from 1 to {len(test)}: "))
-            except ValueError:
-                print("Invalid song index.")
-            if song_index > 0 and song_index <= len(test):
-                print_test_naive_bayes(model, test[song_index - 1])
-            else:
-                print("Invalid song index. Song index must be a number from 1 to {len(test)}: ")
-        elif option == "2": 
-            try:
-                k = int(input(f"Please select a k from 1 to {len(model[0])}: "))
-            except ValueError:
-                print("Invalid k.")
-            if k > 0 and k <= len(model[0]):
-                top_k_evaluation(model, test, k)
-            else:
-                print("Invalid k. k must be a number from 1 to {len(model[0])}")
+            artist = user_input_artist(artists)
+            if artist == -1:
+                continue
+            song = user_input_song_by_artist(artist, test)
+            if song == -1:
+                continue
+            print_test_naive_bayes(model, song)
+        elif option == "2":
+            k = user_input_k(len(artists)) 
+            if k == -1:
+                continue 
+            top_k_evaluation(model, test, k)
+        elif option == "3":
+            artist = user_input_artist(artists) 
+            if artist == -1:
+                continue
+            k = user_input_k(len(artists)) 
+            if k == -1:
+                continue
+            top_k_classifier_evaluation(model, test, k, artist)
         elif option == "":
             return 0
         else:
             print("Not a valid option.")
+        input("Press [ENTER] to continue.")
 
 main()
