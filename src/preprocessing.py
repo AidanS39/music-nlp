@@ -1,17 +1,34 @@
 import os
+import csv
+import re
 
-# returns a list of (artist, lyrics) from every song in the Songs Lyrics Dataset
+# returns a list of (artist, lyrics, title) from every song in the Songs Lyrics Dataset
 def song_lyrics_dataset():
     songs = list()
     
-    # iterate through every files
     dir_path = "../data/song-lyrics-dataset/csv/" 
     for file_name in os.listdir(dir_path):
         file_path = dir_path + file_name
-        with open(file_path, "r") as file:
+        with open(file_path, "r") as songs_file:
+            reader = csv.DictReader(songs_file)
+            for song in reader:
+                song["Lyric"] = re.sub(r'[^\w\s]', '', song["Lyric"])
+                song["Lyric"] = re.sub(r'\s+', ' ', song["Lyric"])
+                songs.append((song["Artist"], song["Lyric"], song["Title"]))
+    return songs
+
+# NOTE: do not use. function is flawed.
+def song_lyrics_dataset_OLD():
+    songs = list()
+    
+    # iterate through every file
+    dir_path = "../data/song-lyrics-dataset/csv/" 
+    for file_name in os.listdir(dir_path):
+        file_path = dir_path + file_name
+        with open(file_path, "r") as songs_file:
             
             # read all songs from file 
-            cur_songs = file.readlines()
+            cur_songs = songs_file.readlines()
             
             # analyze table header, find index of artist and lyrics
             header = cur_songs[0].rstrip()
