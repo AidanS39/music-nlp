@@ -1,20 +1,10 @@
 import preprocessing
 import naive_bayes
 import n_grams
+import util
 import math
 import random
 import time
-
-def train_test_split(data: list(), train_split: float):
-    # generate the random train test indices over the data set
-    train_indices = random.sample(range(len(data)), (int)(len(data) * train_split))
-    test_indices = [i for i in range(len(data)) if i not in train_indices]
-    
-    # generate the train and test sets
-    train = [data[i] for i in train_indices]
-    test = [data[i] for i in test_indices]
-
-    return train, test
 
 def user_input_artist(artists: list()):
     print("Artists: ") 
@@ -66,7 +56,7 @@ def main():
     songs = preprocessing.song_lyrics_dataset()
 
     print("Splitting data into training and test sets...")
-    train, test = train_test_split(songs, 0.9)
+    train, test = util.train_test_split(songs, 0.9)
 
     print("\nWelcome to the NLP Music Program")
     while True: 
