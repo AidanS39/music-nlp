@@ -4,8 +4,7 @@ Using Natural Language Processing concepts with Python to analyze music lyrics.
 
 ## Summary
 
-This project uses NLP concepts such as Naive Bayes, Text Classification, Supervised Machine Learning, and Laplace Smoothing to create language models based off the lyrics of many songs. The project is currently coded entirely using raw Python, meaning only basic Python libraries such as the `math` and `random` libraries are used. In the future, I plan to build on this project, using different (and more sophisticated) concepts to analyze music and evaluate performance between different models.
-
+This project uses NLP concepts such as Naive Bayes, Text Classification, Supervised Machine Learning, and Laplace Smoothing to create language models based off the lyrics of many songs. The project is currently coded entirely using raw Python, meaning only basic Python libraries such as the `math` and `random` libraries are used. An analysis of the project can be found in the root directory under `MusicNLP_Analysis1.pdf`.
 ## Usage
 ### Requirements
 Although this project should be pretty flexible, it is not guaranteed to work without fulfilling these requirement.
